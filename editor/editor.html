@@ -14,6 +14,7 @@
             ctx.canvas.width=window.innerWidth;
             ctx.canvas.height=window.innerHeight;        
             display.addEventListener('mousedown',function(e){window.keyController.action('mousedown',e.clientX,e.clientY);});
+            document.body.addEventListener('keyup',function(e){window.keyController.action('keyup',e.key,0);});
         
             setInterval(run,40);
         }
@@ -62,6 +63,20 @@
                                 }
                             break;
                         }
+                    case 'keyup':
+                        {
+                            switch (x)
+                            {
+                                case 's':
+                                    {
+                                        alert ('to do.... save..');
+                                        break;
+                                    }
+                                
+                            break;
+
+                            }
+                        }
                 }
             }
         }
@@ -84,8 +99,8 @@
                     {
                         var resolution=window.innerWidth;
                         if (resolution>window.innerHeight)resolution=window.innerHeight;
-                        var posX=object.positionX*this.zoomX+resolution/2;
-                        var posY=object.positionY*this.zoomY+resolution/2;
+                        var posX=object.getPosX()*this.zoomX+resolution/2;
+                        var posY=object.getPosY()*this.zoomY+resolution/2;
                         var squareSizeX=resolution/this.zoomX;
                         var squareSizeY=resolution/this.zoomY;
                         ctx.fillRect(posX,posY,squareSizeX,squareSizeY);
@@ -100,8 +115,8 @@
                 var posX = window.keyController.mouseX*(resolution/(2*this.zoomX));
                 var posY = window.keyController.mouseY*(resolution/(2*this.zoomY));
                 var newElement=new MapObject();
-                newElement.positionX=posX;
-                newElement.positionY=posY;
+                newElement.positionX=Math.floor(posX*100);
+                newElement.positionY=Math.floor(posY*100);
                 this.objects.push(newElement);
             }
         }
@@ -113,6 +128,14 @@
             {
                 this.positionX=0;
                 this.positionY=0;
+            }
+            getPosX()
+            {
+                return this.positionX/100;
+            }
+            getPosY()
+            {
+                return this.positionY/100;
             }
         }
     </script>

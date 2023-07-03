@@ -1,0 +1,142 @@
+<head>
+
+    <script src = 'js/CollisionGroundMap.js'></script>
+    <script src = 'js/GroundMapObject.js'></script>
+    <script src = 'js/GameObject.js'></script>
+    <script src = 'js/GameMap.js'></script>
+
+<script>
+    function init()
+    {
+        window.keyA=false;
+        window.keyD=false;
+        window.keyS=false;
+        window.keyW=false;
+
+        window.gameMap = new GameMap();
+        window.collisionGroundMap = new CollisionGroundMap(60);
+        window.mapObjects = new Array();
+        window.mapObjects.push(new GroundMapObject(60 ,'./image/testObject.png', 0.1, 0.6, 0.5, 0.5));
+        window.gameObjects = new Array();
+        window.gameObjects.push(new GameObject(60 ,'./image/testObject.png', 0.7, 0.3, 0.2, 0.2));
+        window.sombrero = new GameObject(60, './image/sombrero.png', 0.5, 0.5, 0.1, 0.1);
+        window.gamePositionX = 0;
+        window.gamePositionY = 0;
+        document.body.addEventListener('keyup', function(e){keyboard(e,false);});
+        document.body.addEventListener('keydown', function(e){keyboard(e,true);});
+
+        window.interval = setInterval (waitForLoading, 135);
+
+    }
+</script>
+<script>
+    function keyboard(e, v)
+    {
+        switch (e.key)
+        {
+            case 'a':
+            {
+                window.keyA=v;
+                break;
+            }
+            case 'd':
+            {
+                window.keyD=v;
+                break;
+            }
+            case 's':
+            {
+                window.keyS=v;
+                break;
+            }
+            case 'w':
+            {
+                window.keyW=v
+                break;
+            }
+        }
+    }
+</script>
+<script>
+    function waitForLoading()
+    { 
+        var check = true;
+        window.mapObjects.forEach(element =>{if (! element.ready)check = false;});
+        window.gameObjects.forEach(element =>{if (! element.ready)check = false;});
+        if ( ! window.sombrero.ready)check = false;
+        if (check)
+        {
+            clearInterval(window.interval);
+            setInterval(run, 40);
+        }
+    }
+</script>
+<script>
+    function run()
+    {
+        var ctx = document.getElementById('display').getContext('2d');
+        ctx.canvas.width=window.innerWidth;
+        ctx.canvas.height=window.innerHeight;
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        window.collisionGroundMap.generateCollisionGroundMap();
+        window.mapObjects.forEach(element => {
+            window.collisionGroundMap.addGroundObjectToCollisionMap(element, window.gamePositionX, window.gamePositionY);
+            });
+        if (window.collisionGroundMap.isObjectCollisionWithGroundMap(window.sombrero, 0, 0))
+        {
+            window.gamePositionX -= window.retourX;
+            window.gamePositionY -=window.retourY;
+            window.collisionGroundMap.generateCollisionGroundMap();
+            window.mapObjects.forEach(element => {
+                window.collisionGroundMap.addGroundObjectToCollisionMap(element, window.gamePositionX, window.gamePositionY);
+                });
+        }
+        window.collisionGroundMap.drawCollisionGroundMap(ctx, 50, 50 ,500, 320);
+        window.mapObjects.forEach(element=>{window.gameMap.drawObjectsToGame(element, ctx, 600,100, 600, 400, window.gamePositionX, window.gamePositionY);});
+        window.gameObjects.forEach(element=>{window.gameMap.drawObjectsToGame(element, ctx, 600,100, 600, 400, window.gamePositionX, window.gamePositionY);});
+        window.gameMap.drawObjectsToGame(window.sombrero, ctx, 600,100, 600, 400, 0, 0);
+
+        var speed = -0.025;
+        window.retourX=0;
+        window.retourY=0;
+        if (window.keyA)
+            {
+                window.gamePositionX -= speed;
+                window.retourX= -speed;
+            }
+        if (window.keyS)
+            {
+                window.gamePositionY += speed;
+                window.retourY= speed;
+            }
+        if (window.keyD){
+                window.gamePositionX += speed;
+                window.retourX= speed;
+            }
+        if (window.keyW)
+            {
+                window.gamePositionY -= speed;
+                window.retourY = -speed;
+            }
+        
+
+
+        /*        if (window.collisionGroundMap.isObjectCollisionWithGroundMap(window.gameObject))
+            {
+                alert ('collision');
+            }
+            else
+            {
+                alert ('no Collision');
+            }*/
+
+    }
+</script>
+
+</head>
+
+<body onload='init()'>
+
+<canvas id='display'></canvas>
+
+</body>

@@ -12,13 +12,13 @@
         window.keyD=false;
         window.keyS=false;
         window.keyW=false;
-
+        alert ('before');
         window.gameMap = new GameMap();
+        alert (window.gameMap);
+        alert ('after');
         window.collisionGroundMap = new CollisionGroundMap(60);
         window.mapObjects = new Array();
         window.mapObjects.push(new GroundMapObject(60 ,'./image/testObject.png', 0.1, 0.6, 0.5, 0.5));
-        window.gameObjects = new Array();
-        window.gameObjects.push(new GameObject(60 ,'./image/testObject.png', 0.7, 0.3, 0.2, 0.2));
         window.sombrero = new GameObject(60, './image/sombrero.png', 0.5, 0.5, 0.1, 0.1);
         window.gamePositionX = 0;
         window.gamePositionY = 0;
@@ -62,8 +62,8 @@
     { 
         var check = true;
         window.mapObjects.forEach(element =>{if (! element.ready)check = false;});
-        window.gameObjects.forEach(element =>{if (! element.ready)check = false;});
-        if ( ! window.sombrero.ready)check = false;
+        if (window.gameMap.isReady()) check = false;
+        if (!window.sombrero.ready) check = false;
         if (check)
         {
             clearInterval(window.interval);
@@ -93,8 +93,7 @@
         }
         window.collisionGroundMap.drawCollisionGroundMap(ctx, 50, 50 ,500, 320);
         window.mapObjects.forEach(element=>{window.gameMap.drawObjectsToGame(element, ctx, 600,100, 600, 400, window.gamePositionX, window.gamePositionY);});
-        window.gameObjects.forEach(element=>{window.gameMap.drawObjectsToGame(element, ctx, 600,100, 600, 400, window.gamePositionX, window.gamePositionY);});
-        window.gameMap.drawObjectsToGame(window.sombrero, ctx, 600,100, 600, 400, 0, 0);
+        window.gameMap.draw(ctx, 600, 100, 600, 400, window.gamePositionX, window.gamePositionY);
 
         var speed = -0.025;
         window.retourX=0;

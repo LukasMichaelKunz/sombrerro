@@ -1,56 +1,29 @@
-class GameObject
+class SombreroObject
 {
-    constructor(collidationMapResolution, name, positionX, positionY, width, height)
+    constructor(collidationMapResolution, imageFile, positionX, positionY, width, height)
     {
-        this.name=name;
+        this.imageFile = imageFile;
         this.positionX = positionX;
         this.positionY = positionY;
         this.width = width;
         this.height = height;
-        this.speedX = 0;
-        this.speedY = 0;
         this.collidationMapResolution = collidationMapResolution;
         this.image = null;
-        this.backPicutres = new Array();
         this.ready = false;
-        this.loaded = 0;
         this.collidationMap = null;
 
-        this.initImages();
+        this.loadImage();
     }
-    loadImage(index, file)
+    loadImage()
     {
         var image = new Image();
         var context = this;
         image.onload = function()
             {
-                context.backPictures[index]=this;
-                context.loaded++;
-                if (context.loaded==context.backPictures.length)
-                {
-                    context.image=context.backPictures[0];
-                    context.generateCollisionMap();
-                }
+                context.image=this;
+                context.generateCollisionMap();
             }
-        image.src = file;
-    }
-    initImages()
-    {
-        switch(this.name)
-        {
-            case 'test':
-                {
-                    this.backPictures=new Array(2);
-                    this.loadImage(0, '../image/testObject.png');
-                    this.loadImage(1, '../image/Ball.png');
-                    break;
-                }
-            default:
-                {
-                    alert ('no such gameObjectName: '+this.name);
-                    break;
-                }
-        }
+        image.src = this.imageFile;
     }
     generateCollisionMap()
     {
@@ -92,24 +65,7 @@ class GameObject
                 }
             }
         }
-        if (this.loaded==this.backPictures.length)this.ready = true;
+        this.ready = true;
 
     }
-    run()
-    {
-        this.positionX+=this.speedX;
-        this.positionY+=this.speedY;
-    }
-    collision(object)
-    {
-        switch (this.name)
-        {
-            case 'test':
-                {
-                    this.image=this.backPictures[1];
-                    this.generateCollisionMap();
-                }
-        }
-    }
-
 }

@@ -1,4 +1,4 @@
-class GroundMapObject
+class GroundObject
 {
     constructor(collidationMapResolution, imageFile, positionX, positionY, width, height)
     {

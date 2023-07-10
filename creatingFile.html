@@ -1,25 +1,22 @@
 <head>
 
-    <script src = 'js/CollisionGroundMap.js'></script>
-    <script src = 'js/GroundMapObject.js'></script>
+    <script src = 'js/groundMap.js'></script>
+    <script src = 'js/GroundObject.js'></script>
     <script src = 'js/GameObject.js'></script>
     <script src = 'js/GameMap.js'></script>
+    <script src = 'js/SombreroObject.js'></script>
 
 <script>
     function init()
     {
+        var mapResolution=100;
         window.keyA=false;
         window.keyD=false;
         window.keyS=false;
         window.keyW=false;
-        alert ('before');
-        window.gameMap = new GameMap();
-        alert (window.gameMap);
-        alert ('after');
-        window.collisionGroundMap = new CollisionGroundMap(60);
-        window.mapObjects = new Array();
-        window.mapObjects.push(new GroundMapObject(60 ,'./image/testObject.png', 0.1, 0.6, 0.5, 0.5));
-        window.sombrero = new GameObject(60, './image/sombrero.png', 0.5, 0.5, 0.1, 0.1);
+        window.gameMap = new GameMap(100);
+        window.groundMap = new GroundMap(100);
+        window.sombrero = new SombreroObject(100, './image/sombrero.png', 0.5, 0.5, 0.1, 0.1);
         window.gamePositionX = 0;
         window.gamePositionY = 0;
         document.body.addEventListener('keyup', function(e){keyboard(e,false);});
@@ -61,8 +58,8 @@
     function waitForLoading()
     { 
         var check = true;
-        window.mapObjects.forEach(element =>{if (! element.ready)check = false;});
-        if (window.gameMap.isReady()) check = false;
+        if (!window.groundMap.isReady()) check = false;
+        if (!window.gameMap.isReady()) check = false;
         if (!window.sombrero.ready) check = false;
         if (check)
         {
@@ -78,49 +75,51 @@
         ctx.canvas.width=window.innerWidth;
         ctx.canvas.height=window.innerHeight;
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        window.collisionGroundMap.generateCollisionGroundMap();
-        window.mapObjects.forEach(element => {
-            window.collisionGroundMap.addGroundObjectToCollisionMap(element, window.gamePositionX, window.gamePositionY);
-            });
-        if (window.collisionGroundMap.isObjectCollisionWithGroundMap(window.sombrero, 0, 0))
-        {
-            window.gamePositionX -= window.retourX;
-            window.gamePositionY -=window.retourY;
-            window.collisionGroundMap.generateCollisionGroundMap();
-            window.mapObjects.forEach(element => {
-                window.collisionGroundMap.addGroundObjectToCollisionMap(element, window.gamePositionX, window.gamePositionY);
-                });
-        }
-        window.collisionGroundMap.drawCollisionGroundMap(ctx, 50, 50 ,500, 320);
-        window.mapObjects.forEach(element=>{window.gameMap.drawObjectsToGame(element, ctx, 600,100, 600, 400, window.gamePositionX, window.gamePositionY);});
-        window.gameMap.draw(ctx, 600, 100, 600, 400, window.gamePositionX, window.gamePositionY);
+        window.groundMap.generateCollisionGroundMap(window.gameMap.positionX, window.gameMap.positionY);
 
+        if (window.groundMap.isObjectCollisionWithGroundMap(window.sombrero, 0, 0))
+        {
+            window.gameMap.positionX -= window.retourX;
+            window.gameMap.positionY -=window.retourY;
+            window.groundMap.generateCollisionGroundMap(window.gameMap.positionX, window.gameMap.positionY);
+
+        }
+        window.groundMap.drawCollisionGroundMap(ctx, 50, 50 ,500, 320);
+        window.groundMap.draw(ctx, 600, 100, 600, 400, window.gameMap.positionX, window.gameMap.positionY);
+        window.gameMap.draw(ctx, 600, 100, 600, 400, window.sombrero);
+
+        this.gameMap.checkCollision();
+        this.gameMap.run();
+
+        this.gameMap.drawLoadMap(ctx, 600,600,400,300);
+        this.gameMap.dropObjectsOutOfScreen();
+        //this.gameMap.drawCollisionMap(ctx, 600,600,600,400);
         var speed = -0.025;
         window.retourX=0;
         window.retourY=0;
         if (window.keyA)
             {
-                window.gamePositionX -= speed;
+                window.gameMap.positionX -= speed;
                 window.retourX= -speed;
             }
         if (window.keyS)
             {
-                window.gamePositionY += speed;
+                window.gameMap.positionY += speed;
                 window.retourY= speed;
             }
         if (window.keyD){
-                window.gamePositionX += speed;
+                window.gameMap.positionX += speed;
                 window.retourX= speed;
             }
         if (window.keyW)
             {
-                window.gamePositionY -= speed;
+                window.gameMap.positionY -= speed;
                 window.retourY = -speed;
             }
         
 
 
-        /*        if (window.collisionGroundMap.isObjectCollisionWithGroundMap(window.gameObject))
+        /*        if (window.groundMap.isObjectCollisionWithGroundMap(window.gameObject))
             {
                 alert ('collision');
             }

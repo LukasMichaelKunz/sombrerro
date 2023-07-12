@@ -7,15 +7,20 @@ class GroundMap
         this.mapResolution=mapResolution;
         this.dimensionWidth=Math.floor(this.dimensionHeight*dimensionFactor);
         this.mapObjects = new Array();
-        this.mapObjects.push(new GroundObject(this.mapResolution, './image/testObject.png', 0.1, 0.6, 0.5, 0.5));
-
+        //this.mapObjects.push(new GroundObject(this.mapResolution, 'test', 0.1, 0.1, 0.3, 0.3));
+        this.imageObjects = new Array();
+        this.imageObjects.push(new ImageObject('test','./image/testObject.png'));
         this.lastLoadX = 0;
         this.lastLoadY = 0;
-        this.loadSpace = 0.3;
+        this.loadSpace = 0.05;
 
-        this.gameOutX = 1;
-        this.gameOutY = 1;
+        this.newLoadData='';
+
+        this.gameOutX = 0.5;
+        this.gameOutY = 0.5;
         this.collisionGroundMap=null;
+
+        this.load((0-this.gameOutX)*100,(0-this.gameOutY)*100,(1+this.gameOutX)*100,(1+this.gameOutY)*100);
     }
     isReady()
     {
@@ -24,7 +29,34 @@ class GroundMap
         {
             if (!element.ready)check = false;
         });
+        this.imageObjects.forEach(element=>
+        {   
+            if (!element.ready)check = false;
+
+        });
         return check;
+    }
+    getImage(name)
+    {
+        var r= new Image();
+        this.imageObjects.forEach(element=>
+        {
+            if (element.name==name)r=element.image;
+        });
+        return r;
+    }
+    isImageReady(name)
+    {
+        var r=false;
+        this.imageObjects.forEach(element=>
+            {
+                if (element.name==name)
+                {
+                   r = element.ready;
+                }
+            });
+        return r;
+    
     }
     draw(ctx, left, top, width, height, gamePosX, gamePosY)
     {
@@ -32,9 +64,25 @@ class GroundMap
         ctx.fillRect(left,top,width,height);
         this.mapObjects.forEach(element => 
         {
-            var moveX = (element.width/2)*width;
-            var moveY = (element.height/2)*height;
-            ctx.drawImage(element.image, left + width * (element.positionX + gamePosX) - moveX, top + height * (element.positionY + gamePosY) - moveY, width * element.width, height * element.height);
+            if (element.ready)
+            {
+                var moveX = (element.width/2)*width;
+                var moveY = (element.height/2)*height;
+                ctx.drawImage(this.getImage(element.imageName), left + width * (element.positionX + gamePosX) - moveX, top + height * (element.positionY + gamePosY) - moveY, width * element.width, height * element.height);
+            }
+        });
+    }
+    setObjectsReady()
+    {
+        this.mapObjects.forEach(element=>
+        {
+            if (!element.ready)
+            {
+                if (this.isImageReady(element.imageName))
+                    {
+                        element.generateCollisionMap(this.getImage(element.imageName));
+                    }
+            }
         });
     }
     drawLoadMap(ctx, left, top, width, height, gamePosX, gamePosY)
@@ -106,13 +154,83 @@ class GroundMap
         if (Math.abs(gamePosY-this.lastLoadY)>=this.loadSpace)doLoad = true;
         if (doLoad)
         {
+
+            var loadX = gamePosX-this.lastLoadX;
+            var loadY = gamePosY-this.lastLoadY;
+
             this.lastLoadX=gamePosX;
             this.lastLoadY=gamePosY;
 
-            var loadX = gamePosX-this.lastLoadX;
-            var loadY = gamePosY-this.lastLoadY
+            if (loadX>0)
+                {
+                    var left = Math.floor(sLeft*100);
+                    var top = Math.floor(sTop * 100);
+                    var width = Math.floor(100*Math.abs(loadX));
+                    var height = Math.floor((2*this.gameOutY+1)*100);
+                    this.load(left - Math.round(gamePosX*100), top - Math.round(gamePosY*100), width, height);
+                }
+            if (loadX<0)
+                {
+                    var left = Math.floor((sRight*100)-(100*Math.abs(loadX)));
+                    var top = Math.floor(sTop * 100);
+                    var width = Math.floor(100*Math.abs(loadX));
+                    var height = Math.floor((2*this.gameOutY+1)*100);
+                    this.load(left - Math.round(gamePosX*100), top - Math.round(gamePosY*100), width, height);
+                }
+            if (loadY>0)
+                {
+                    var left = Math.floor(100*sLeft);
+                    if (loadX>0)left+=Math.floor(loadX*100);
+                    var top = Math.floor(sTop * 100);
+                    var width = Math.floor(100*((2*this.gameOutY+1)-Math.abs(loadX)));
+                    var height = Math.floor(100*Math.abs(loadY));
+                    this.load(left - Math.round(gamePosX*100), top - Math.round(gamePosY*100), width, height);
+                }
+            if (loadY<0)
+                {
+                    var left = Math.floor(100*sLeft);
+                    if (loadX>0)left+=Math.floor(loadX*100);
+                    var top = Math.floor((sBottom-Math.abs(loadY)) * 100);
+                    var width = Math.floor(100*((2*this.gameOutY+1)-Math.abs(loadX)));
+                    var height = Math.floor(100*Math.abs(loadY));
+                    this.load(left - Math.round(gamePosX*100), top - Math.round(gamePosY*100), width, height);
+                }
         }
     }   
+    parseNewData()
+    {
+
+        var objects = this.newLoadData.split('<object>');
+        this.newLoadData='';
+        for (var i =1; i<objects.length;i++)
+            {
+                var object = objects[i].split('<split>');
+                if (object.length==5)
+                {
+                    //alert (object[0]+' left' + object[1]+' top' + object[2] + ' width' + object[3] + 'height' + object[4]);
+                    //var newGroundObject = new GroundObject(this.mapResolution, object[0],parseInt(object[1])/100,parseInt(object[2])/100,parseInt(object[3])/100,parseInt(object[4])/100);
+                    this.mapObjects.push(new GroundObject(this.mapResolution, object[0],parseInt(object[1])/100,parseInt(object[2])/100,parseInt(object[3])/100,parseInt(object[4])/100));
+                }
+            }
+    }
+    load(left, top, width, height)
+    {
+        //alert ('left:'+left+' top:'+top+' width:'+width+' height:'+height);
+        var context = this;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                context.newLoadData +=  xhttp.responseText;
+            }
+        };
+        var params = '?left='+left;
+        params += '&top='+top;
+        params += '&width='+width;
+        params += '&height='+height;
+        params += '&map=map';
+        xhttp.open("GET", "php/readMap.php"+params, true);
+        xhttp.send();
+    }
     generateCollisionGroundMap(gamePosX, gamePosY)
     {
         this.collisionGroundMap = new Array(this.dimensionWidth);
@@ -125,8 +243,10 @@ class GroundMap
             }
         }
         this.mapObjects.forEach(element =>
-        {
-            this.addGroundObjectToCollisionMap(element, gamePosX, gamePosY);
+        {   if (element.ready)
+            {
+                this.addGroundObjectToCollisionMap(element, gamePosX, gamePosY);
+            }
         });
     }
     drawCollisionGroundMap(ctx, left, top, width, height)

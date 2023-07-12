@@ -8,15 +8,16 @@ class Game
         this.collisionBackX = 0;
         this.collisionBackY = 0;
 
-        this.moveSpeed=0.02;
+        this.moveSpeed=0.012;
 
         this.mapResolution = 100;
 
         this.keys= new Map();
         
         this.groundMap= new GroundMap(this.mapResolution);
+
         this.gameMap = new GameMap(this.mapResolution);
-        this.sombrero = new SombreroObject(100, './image/sombrero.png', 0.5, 0.5, 0.1, 0.1);
+        this.sombrero = new SombreroObject(100, './image/sombrero.png', 0.5, 0.5, 0.05, 0.05);
 
         var context = this;
         document.body.addEventListener('keydown',function(e){context.keyControl(e);});
@@ -32,6 +33,8 @@ class Game
         var body = document.getElementsByTagName("body")[0];
         body.appendChild(this.canvas);
 
+        this.counter = 0;
+        this.counterCheck = 0;
 
         this.loadInterval = setInterval(this.waitinForLoad.bind(this),200);
 
@@ -73,21 +76,20 @@ class Game
     }
     run()
     {
+        this.counter ++;
+
         var ctx = document.getElementById('Display').getContext('2d');
         ctx.canvas.width = window.innerWidth;
         ctx.canvas.height = window.innerHeight;
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
         this.groundMap.generateCollisionGroundMap(this.gamePositionX, this.gamePositionY);
-        this.groundMap.drawCollisionGroundMap(ctx, 50, 50 ,500, 320);
+        //this.groundMap.drawCollisionGroundMap(ctx, 50, 50 ,500, 320);
 
-        this.groundMap.draw(ctx, 600, 100, 600, 400, this.gamePositionX, this.gamePositionY);
-        this.gameMap.draw(ctx, 600, 100, 600, 400, this.sombrero, this.gamePositionX, this.gamePositionY);
+        this.groundMap.draw(ctx, 0, 0, window.innerWidth, window.innerHeight, this.gamePositionX, this.gamePositionY);
+        this.gameMap.draw(ctx, 0, 0, window.innerWidth, window.innerHeight, this.sombrero, this.gamePositionX, this.gamePositionY);
         this.gameMap.checkCollision();
         this.gameMap.run();
-
-        this.groundMap.drawLoadMap(ctx, 600,700,600,480, this.gamePositionX, this.gamePositionY);
-        this.groundMap.loadAndDropObjects(this.gamePositionX, this.gamePositionY);
 
         this.doGamePosition();
         this.groundMap.generateCollisionGroundMap(this.gamePositionX, this.gamePositionY);
@@ -100,6 +102,14 @@ class Game
 
         }
         this.drawPosition(ctx);
+
+        //this.groundMap.drawLoadMap(ctx, 600,700,600,480, this.gamePositionX, this.gamePositionY);
+        this.groundMap.loadAndDropObjects(this.gamePositionX, this.gamePositionY);
+        this.groundMap.parseNewData();
+        this.groundMap.setObjectsReady();
+
+        if (this.counter-this.counterCheck>1)alert ('there is something wrong');
+        this.counterCheck = this.counter;
     }
     doGamePosition()
     {
